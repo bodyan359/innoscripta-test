@@ -1,0 +1,28 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import ArticleList from './components/ArticleList';
+
+const App: React.FC = () => {
+    const [articles, setArticles] = useState<Article[]>([]);
+
+    useEffect(() => {
+        const fetchArticles = async () => {
+            try {
+                const response = await axios.get<{ articles: Article[] }>('YOUR_NEWS_API_ENDPOINT_HERE');
+                setArticles(response.data.articles);
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+            }
+        };
+
+        fetchArticles();
+    }, []);
+
+    return (
+        <div className="App">
+            <ArticleList articles={articles} />
+        </div>
+    );
+};
+
+export default App;
