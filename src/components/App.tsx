@@ -5,8 +5,6 @@ import ArticleList from './ArticleList/ArticleList.tsx';
 const App: React.FC = () => {
     const [articles, setArticles] = useState<any>([]);
 
-    console.log('Y',import.meta.env)
-
     useEffect(() => {
         const fetchArticles = async () => {
             try {
