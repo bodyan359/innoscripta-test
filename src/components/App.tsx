@@ -1,34 +1,51 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Row, Col, Input, Select, Button } from 'antd';
+import {Row, Col, Input, Select, Button, DatePickerProps, DatePicker} from 'antd';
 import ArticleCard from './ArticleCard/ArticleCard.tsx';
 import { Article } from '../types.ts';
-
+import debounce from 'lodash.debounce';
+import dayjs from 'dayjs';
 const { Option } = Select;
 
 const App: React.FC = () => {
+    console.log(dayjs())
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [dateFilter, setDateFilter] = useState<any>('2024-01-01');
+    const [dateFilter, setDateFilter] = useState<any>(dayjs());
     const [categoryFilter, setCategoryFilter] = useState<any>('information technology');
     const [sourceFilter, setSourceFilter] = useState<string[]>(["newsApiResponse"]);
 
-    useEffect(() => {
-        fetchArticles();
-    }, [searchQuery, dateFilter, categoryFilter, sourceFilter]);
+    // useEffect(() => {
+    //     const debouncedFetchArticles = debounce(fetchArticles, 1500);
+    //     debouncedFetchArticles();
+    // }, [searchQuery, dateFilter, categoryFilter, sourceFilter]);
 
     const fetchArticles = async () => {
         try {
-            const country = 'us';
-            const newsApiEndpoint: string = `https://newsapi.org/v2/top-headlines?country=${country}&apiKey=${import.meta.env.VITE_NEWSAPI_API_KEY}`;
-            const newsApiAIApiEndpoint: string = `https://newsapi.ai/api/v1/article/getArticles?query=%7B%22%24query%22%3A%7B%22conceptUri%22%3A%22http%3A%2F%2Fen.wikipedia.org%2Fwiki%2F${categoryFilter}%22%7D%2C%22%24filter%22%3A%7B%22forceMaxDataTimeWindow%22%3A%2231%22%7D%7D&resultType=articles&articlesSortBy=date&apiKey=${import.meta.env.VITE_NEWSAPIAI_API_KEY}`;
+            const APIAI_PARAMS = {
+                "query": {
+                    "$query": {
+                        "keyword": searchQuery,
+                        "keywordSearchMode": "simple"
+                    },
+                    "$filter": {
+                        "forceMaxDataTimeWindow": "31"
+                    }
+                },
+                "resultType": "articles",
+                "articlesSortBy": "date",
+                "apiKey": import.meta.env.VITE_NEWSAPIAI_API_KEY
+            };
+            let country = 'us';
+            const newsApiEndpoint: string = `https://newsapi.org/v2/top-headlines?q=${searchQuery}&country=${country}&from=${dateFilter}&sortBy=${'createdAt'}&apiKey=${import.meta.env.VITE_NEWSAPI_API_KEY}`;
+            const newsApiAIApiEndpoint: string = `https://newsapi.ai/api/v1/article/getArticles`;
             const NYTimes_ApiEndpoint: string = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${categoryFilter}&api-key=${import.meta.env.VITE_NYTIMES_API_KEY}`;
 
             const [newsApiResponse, newsApiAIApiResponse, NYTimesApiResponse] = await Promise.allSettled([
                 axios.get(newsApiEndpoint),
-                axios.get(newsApiAIApiEndpoint),
+                axios.get(newsApiAIApiEndpoint, {params: APIAI_PARAMS}),
                 axios.get(NYTimes_ApiEndpoint)
             ]);
             let filteredArticles: any[] = [];
@@ -56,6 +73,10 @@ const App: React.FC = () => {
         fetchArticles();
     };
 
+    const onChange: DatePickerProps['onChange'] = (date, dateString) => {
+        setDateFilter(dateString)
+    };
+
     return (
         <div className="App">
             <Row gutter={[16, 16]}>
@@ -63,11 +84,7 @@ const App: React.FC = () => {
                     <Input placeholder="Enter keywords" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                 </Col>
                 <Col>
-                    <Select placeholder="Select date" value={dateFilter} onChange={(value) => setDateFilter(value)}>
-                        <Option value="2024-01-01">2024-01-01</Option>
-                        <Option value="2023-01-01">2023-01-01</Option>
-                        <Option value="2022-01-01">2022-01-01</Option>
-                    </Select>
+                        <DatePicker defaultValue={dateFilter} onChange={onChange} />
                 </Col>
                 <Col>
                     <Select placeholder="Select category" value={categoryFilter} onChange={(value) => setCategoryFilter(value)}>
