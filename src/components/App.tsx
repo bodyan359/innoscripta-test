@@ -24,50 +24,48 @@ const App: React.FC = () => {
 
     const fetchArticles = async () => {
         try {
-            const APIAI_PARAMS = {
-                "query": {
-                    "$query": {
-                        "keyword": searchQuery,
-                        "keywordSearchMode": "simple"
-                    },
-                    "$filter": {
-                        "forceMaxDataTimeWindow": "31"
-                    }
-                },
-                "resultType": "articles",
-                "articlesSortBy": "date",
-                "apiKey": import.meta.env.VITE_NEWSAPIAI_API_KEY
-            };
-            let country = 'us';
-            const newsApiEndpoint: string = `https://newsapi.org/v2/top-headlines?q=${searchQuery}&country=${country}&from=${dateFilter}&sortBy=${'createdAt'}&apiKey=${import.meta.env.VITE_NEWSAPI_API_KEY}`;
-            const newsApiAIApiEndpoint: string = `https://newsapi.ai/api/v1/article/getArticles`;
-            const NYTimes_ApiEndpoint: string = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${categoryFilter}&api-key=${import.meta.env.VITE_NYTIMES_API_KEY}`;
-
-            const [newsApiResponse, newsApiAIApiResponse, NYTimesApiResponse] = await Promise.allSettled([
-                axios.get(newsApiEndpoint),
-                axios.get(newsApiAIApiEndpoint, {params: APIAI_PARAMS}),
-                axios.get(NYTimes_ApiEndpoint)
-            ]);
+            setLoading(true);
             let filteredArticles: any[] = [];
 
             if (sourceFilter.includes('newsApiResponse')) {
-                filteredArticles = [...filteredArticles, ...(newsApiResponse.status === 'fulfilled' ? newsApiResponse.value.data?.articles ?? [] : [])];
-            }
-            if (sourceFilter.includes('newsApiAIApiResponse')) {
-                filteredArticles = [...filteredArticles, ...(newsApiAIApiResponse.status === 'fulfilled' ? newsApiAIApiResponse.value.data?.articles?.results ?? [] : [])];
-            }
-            if (sourceFilter.includes('NYTimesApiResponse')) {
-                filteredArticles = [...filteredArticles, ...(NYTimesApiResponse.status === 'fulfilled' ? NYTimesApiResponse.value.data?.response?.docs ?? [] : [])];
+                const API_ENDPOINT = `https://newsapi.org/v2/top-headlines?q=${searchQuery}&country=us&from=${dateFilter}&sortBy=createdAt&apiKey=${import.meta.env.VITE_NEWSAPI_API_KEY}`;
+                const newsApiResponse = await axios.get(API_ENDPOINT);
+                filteredArticles.push(...(newsApiResponse.data?.articles ?? []));
             }
 
+            if (sourceFilter.includes('newsApiAIApiResponse')) {
+                const APIAI_PARAMS = {
+                    "query": {
+                        "$query": {
+                            "keyword": searchQuery,
+                            "keywordSearchMode": "simple"
+                        },
+                        "$filter": {
+                            "forceMaxDataTimeWindow": "31"
+                        }
+                    },
+                    "resultType": "articles",
+                    "articlesSortBy": "date",
+                    "apiKey": import.meta.env.VITE_NEWSAPIAI_API_KEY
+                };
+                const newsApiAIApiResponse = await axios.get('https://newsapi.ai/api/v1/article/getArticles', { params: APIAI_PARAMS });
+                filteredArticles.push(...(newsApiAIApiResponse.data?.articles?.results ?? []));
+            }
+
+            if (sourceFilter.includes('NYTimesApiResponse')) {
+                const NYTimes_ApiEndpoint = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${categoryFilter}&api-key=${import.meta.env.VITE_NYTIMES_API_KEY}`;
+                const NYTimesApiResponse = await axios.get(NYTimes_ApiEndpoint);
+                filteredArticles.push(...(NYTimesApiResponse.data?.response?.docs ?? []));
+            }
 
             setArticles(filteredArticles);
-            setLoading(false);
         } catch (error) {
             console.error('Error fetching articles:', error);
+        } finally {
             setLoading(false);
         }
     };
+
 
     const handleSearch = () => {
         fetchArticles();
