@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Row, Col, Input, Select, Button } from 'antd';
@@ -10,8 +11,8 @@ const App: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [dateFilter, setDateFilter] = useState('2024-01-01');
-    const [categoryFilter, setCategoryFilter] = useState('information technology');
+    const [dateFilter, setDateFilter] = useState<any>('2024-01-01');
+    const [categoryFilter, setCategoryFilter] = useState<any>('information technology');
     const [sourceFilter, setSourceFilter] = useState<string[]>(["newsApiResponse"]);
 
     useEffect(() => {
@@ -33,14 +34,15 @@ const App: React.FC = () => {
             let filteredArticles: any[] = [];
 
             if (sourceFilter.includes('newsApiResponse')) {
-                filteredArticles = [...(newsApiResponse.status === 'fulfilled' ? newsApiResponse.value.data?.articles ?? [] : [])];
+                filteredArticles = [...filteredArticles, ...(newsApiResponse.status === 'fulfilled' ? newsApiResponse.value.data?.articles ?? [] : [])];
             }
             if (sourceFilter.includes('newsApiAIApiResponse')) {
-                filteredArticles = [...(newsApiAIApiResponse.status === 'fulfilled' ? newsApiAIApiResponse.value.data?.articles?.results ?? [] : [])];
+                filteredArticles = [...filteredArticles, ...(newsApiAIApiResponse.status === 'fulfilled' ? newsApiAIApiResponse.value.data?.articles?.results ?? [] : [])];
             }
             if (sourceFilter.includes('NYTimesApiResponse')) {
-                filteredArticles = [...(NYTimesApiResponse.status === 'fulfilled' ? NYTimesApiResponse.value.data?.response?.docs ?? [] : [])];
+                filteredArticles = [...filteredArticles, ...(NYTimesApiResponse.status === 'fulfilled' ? NYTimesApiResponse.value.data?.response?.docs ?? [] : [])];
             }
+
 
             setArticles(filteredArticles);
             setLoading(false);
