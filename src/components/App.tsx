@@ -16,11 +16,12 @@ const App: React.FC = () => {
     const [dateFilter, setDateFilter] = useState<any>(dayjs());
     const [categoryFilter, setCategoryFilter] = useState<any>('information technology');
     const [sourceFilter, setSourceFilter] = useState<string[]>(["newsApiResponse"]);
+    const [autoUpdate, setAutoUpdate] = useState<boolean>(false);
 
-    // useEffect(() => {
-    //     const debouncedFetchArticles = debounce(fetchArticles, 1500);
-    //     debouncedFetchArticles();
-    // }, [searchQuery, dateFilter, categoryFilter, sourceFilter]);
+    useEffect(() => {
+        const debouncedFetchArticles = debounce(fetchArticles, 1500);
+        autoUpdate && debouncedFetchArticles();
+    }, [searchQuery, dateFilter, categoryFilter, sourceFilter]);
 
     const fetchArticles = async () => {
         try {
@@ -34,22 +35,20 @@ const App: React.FC = () => {
             }
 
             if (sourceFilter.includes('newsApiAIApiResponse')) {
-                const APIAI_PARAMS = {
-                    "query": {
-                        "$query": {
-                            "keyword": searchQuery,
-                            "keywordSearchMode": "simple"
-                        },
-                        "$filter": {
-                            "forceMaxDataTimeWindow": "31"
-                        }
+
+                const newsApiAIApiResponse = await axios.get(`https://newsapi.ai/api/v1/article/getArticles?query=%7B%22%24query%22%3A%7B%22%24and%22%3A%5B%7B%22keyword%22%3A%22${searchQuery}%22%2C%22keywordLoc%22%3A%22title%22%7D%2C%7B%22dateStart%22%3A%22${dateFilter}%22%2C%22dateEnd%22%3A%22${dateFilter}%22%7D%5D%7D%7D&resultType=articles&articlesSortBy=date&apiKey=7e11187d-1ceb-4243-9be1-f06b5c2f487e`);
+
+                const formattedArticles = newsApiAIApiResponse.data?.articles?.results?.map((article: any) => ({
+                    title: article.title,
+                    description: article.body,
+                    author: article.author,
+                    source: {
+                        name: "NewsAPI AI"
                     },
-                    "resultType": "articles",
-                    "articlesSortBy": "date",
-                    "apiKey": import.meta.env.VITE_NEWSAPIAI_API_KEY
-                };
-                const newsApiAIApiResponse = await axios.get('https://newsapi.ai/api/v1/article/getArticles', { params: APIAI_PARAMS });
-                filteredArticles.push(...(newsApiAIApiResponse.data?.articles?.results ?? []));
+                    url: article.url
+                })) ?? [];
+
+                filteredArticles.push(...formattedArticles);
             }
 
             if (sourceFilter.includes('NYTimesApiResponse')) {
@@ -90,7 +89,7 @@ const App: React.FC = () => {
 
     return (
         <div className="App">
-            <Row gutter={[16, 16]}>
+            <Row gutter={[16, 16]} style={{marginTop: '2%'}}>
                 <Col xs={24}>
                     <Row>
                         <Col span={6}>
