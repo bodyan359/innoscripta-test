@@ -55,8 +55,21 @@ const App: React.FC = () => {
             if (sourceFilter.includes('NYTimesApiResponse')) {
                 const NYTimes_ApiEndpoint = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${categoryFilter}&api-key=${import.meta.env.VITE_NYTIMES_API_KEY}`;
                 const NYTimesApiResponse = await axios.get(NYTimes_ApiEndpoint);
-                filteredArticles.push(...(NYTimesApiResponse.data?.response?.docs ?? []));
+                const articlesFromNYTimes = NYTimesApiResponse.data?.response?.docs ?? [];
+
+                const formattedArticlesFromNYTimes = articlesFromNYTimes.map((article: any) => ({
+                    title: article?.headline?.main ?? "",
+                    description: article?.abstract ?? "",
+                    author: article?.byline?.original ?? "",
+                    source: {
+                        name: "NY Times"
+                    },
+                    url: article?.web_url ?? ""
+                }));
+
+                filteredArticles.push(...formattedArticlesFromNYTimes);
             }
+
 
             setArticles(filteredArticles);
         } catch (error) {
