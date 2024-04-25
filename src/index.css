@@ -8,6 +8,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.ant-select-selector {
-  min-width: 125px;
+.ant-select-selector, .ant-select, .ant-picker {
+  min-width: 200px;
 }

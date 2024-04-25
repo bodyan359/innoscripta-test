@@ -53,7 +53,7 @@ const App: React.FC = () => {
             }
 
             if (sourceFilter.includes('NYTimesApiResponse')) {
-                const NYTimes_ApiEndpoint = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${categoryFilter}&api-key=${import.meta.env.VITE_NYTIMES_API_KEY}`;
+                const NYTimes_ApiEndpoint = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${categoryFilter}&pub_date=${dateFilter}&api-key=${import.meta.env.VITE_NYTIMES_API_KEY}`;
                 const NYTimesApiResponse = await axios.get(NYTimes_ApiEndpoint);
                 const articlesFromNYTimes = NYTimesApiResponse.data?.response?.docs ?? [];
 
@@ -91,38 +91,66 @@ const App: React.FC = () => {
     return (
         <div className="App">
             <Row gutter={[16, 16]}>
-                <Col span={24}>
-                    <Input placeholder="Enter keywords" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                <Col xs={24}>
+                    <Row>
+                        <Col span={6}>
+                            <label>Keywords:</label>
+                        </Col>
+                        <Col span={12}>
+                            <Input placeholder="Enter keywords" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                        </Col>
+                    </Row>
                 </Col>
-                <Col>
-                        <DatePicker defaultValue={dateFilter} onChange={onChange} />
+                <Col xs={24}>
+                    <Row>
+                        <Col span={6}>
+                            <label>Date:</label>
+                        </Col>
+                        <Col span={18}>
+                            <DatePicker defaultValue={dateFilter} onChange={onChange} />
+                        </Col>
+                    </Row>
                 </Col>
-                <Col>
-                    <Select placeholder="Select category" value={categoryFilter} onChange={(value) => setCategoryFilter(value)}>
-                        <Option value="business">Business</Option>
-                        <Option value="information technology">Information Technology</Option>
-                        <Option value="science">Science</Option>
-                        <Option value="health">Health</Option>
-                        <Option value="sports">Sports</Option>
-                    </Select>
+                <Col xs={24}>
+                    <Row>
+                        <Col span={6}>
+                            <label>Category:</label>
+                        </Col>
+                        <Col span={18}>
+                            <Select placeholder="Select category" value={categoryFilter} onChange={(value) => setCategoryFilter(value)}>
+                                <Option value="business">Business</Option>
+                                <Option value="information technology">Information Technology</Option>
+                                <Option value="science">Science</Option>
+                                <Option value="health">Health</Option>
+                                <Option value="sports">Sports</Option>
+                            </Select>
+                        </Col>
+                    </Row>
                 </Col>
-                <Col>
-                    <Select mode={"multiple"} placeholder="Search by source"  value={sourceFilter} onChange={(value) => setSourceFilter(value)}>
-                        <Option value="newsApiResponse">NewsAPI</Option>
-                        <Option value="newsApiAIApiResponse">NewsAPI AI</Option>
-                        <Option value="NYTimesApiResponse">NY Times</Option>
-                    </Select>
+                <Col xs={24}>
+                    <Row>
+                        <Col span={6}>
+                            <label>Search by source:</label>
+                        </Col>
+                        <Col span={18}>
+                            <Select mode="multiple" placeholder="Search by source" value={sourceFilter} onChange={(value) => setSourceFilter(value)}>
+                                <Option value="newsApiResponse">NewsAPI</Option>
+                                <Option value="newsApiAIApiResponse">NewsAPI AI</Option>
+                                <Option value="NYTimesApiResponse">NY Times</Option>
+                            </Select>
+                        </Col>
+                    </Row>
                 </Col>
                 <Col span={24}>
                     <Button type="primary" onClick={handleSearch}>Search</Button>
                 </Col>
-                {loading ? <div>Loading...</div> : (
-                    articles.map((article, artKey) => (
+
+
+                {articles.map((article, artKey) => (
                         <Col key={artKey} xs={24} sm={24} md={24} lg={12}>
-                            <ArticleCard article={article} loading={false} />
+                            <ArticleCard article={article} loading={loading} />
                         </Col>
-                    ))
-                )}
+                    ))}
             </Row>
         </div>
     );
