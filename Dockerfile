@@ -69,4 +69,4 @@ COPY --from=build /usr/src/app/dist ./dist
 EXPOSE 8000
 
 # Run the application.
-CMD yarn dev
+RUN yarn dev
