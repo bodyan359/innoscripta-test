@@ -144,7 +144,6 @@ const App: React.FC = () => {
                     <Button type="primary" onClick={handleSearch}>Search</Button>
                 </Col>
 
-
                 {articles.map((article, artKey) => (
                         <Col key={artKey} xs={24} sm={24} md={24} lg={12}>
                             <ArticleCard article={article} loading={loading} />

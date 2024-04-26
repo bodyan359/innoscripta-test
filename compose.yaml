@@ -7,12 +7,14 @@
 # You can add other services your application may depend on here, such as a
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
-version: "3.4"
+
 services:
   vite_docker:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: node:alpine
     container_name: vite_docker
-    entrypoint: /bin/sh
     ports:
       - 8000:8000
     working_dir: /srv/app

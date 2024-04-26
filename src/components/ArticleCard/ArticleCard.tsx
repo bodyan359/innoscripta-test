@@ -4,7 +4,7 @@ import { Card } from 'antd';
 import { Article } from '../../types.ts';
 
 interface ArticleCardProps {
-    article: Article | undefined;
+    article: Article | any;
     loading: boolean;
 }
 
